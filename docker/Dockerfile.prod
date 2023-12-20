@@ -1,0 +1,44 @@
+#####################################################################
+#                             Build Image                           #
+#####################################################################
+
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+COPY --chown=node:node package*.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+COPY --chown=node:node . .
+
+RUN yarn build
+
+ENV NODE_ENV=production
+
+RUN yarn install --production --frozen-lockfile \
+    && yarn cache clean --force
+
+USER node
+
+
+#####################################################################
+#                         Production Image                          #
+#####################################################################
+
+FROM node:18-alpine as prod
+
+WORKDIR /app
+
+COPY --chown=node:node --from=build /app/dist ./dist
+COPY --chown=node:node --from=build /app/node_modules ./node_modules
+
+ENV NODE_ENV=production
+
+USER node
+
+CMD ["node", "dist/main.js"]
+
+
+
+

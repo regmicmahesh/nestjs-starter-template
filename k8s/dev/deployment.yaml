@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    secrets.doppler.com/reload: 'true'
+  creationTimestamp: null
+  labels:
+    app: starter-api
+  name: starter-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: starter-api
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: starter-api
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: dev-starter-api-secrets
+          image:
+          name: starter-api
+          ports:
+            - containerPort: 8000
+          resources: {}
+status: {}

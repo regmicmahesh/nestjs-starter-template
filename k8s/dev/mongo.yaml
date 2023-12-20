@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: 'starter-api-mongodb'
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 'starter-api-mongodb'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: 'starter-api-mongodb'
+  template:
+    metadata:
+      labels:
+        app: 'starter-api-mongodb'
+    spec:
+      volumes:
+        - name: 'starter-api-mongodb'
+          persistentVolumeClaim:
+            claimName: 'starter-api-mongodb'
+      containers:
+        - name: 'starter-api-mongodb'
+          image: mongo:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 27017
+          volumeMounts:
+            - mountPath: /data/db
+              name: 'starter-api-mongodb'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: 'starter-api-mongodb'
+spec:
+  selector:
+    app: 'starter-api-mongodb'
+  type: ClusterIP
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

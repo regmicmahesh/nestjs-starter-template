@@ -1,0 +1,9 @@
+FROM node:20-bookworm
+
+WORKDIR /app
+
+COPY package.json nest-cli.json tsconfig.json tsconfig.build.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
+CMD ["yarn", "start:dev"]

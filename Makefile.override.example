@@ -1,0 +1,38 @@
+export PORT = 
+
+export MONGO_USERNAME = 
+export MONGO_PASSWORD = 
+export MONGO_URI = 
+
+export REDIS_URI = 
+
+export JWT_SECRET = 
+
+export API_VERSION = 
+
+export COOKIE_SECRET = 
+
+export AWS_ACCESS_KEY_ID = 
+export AWS_SECRET_ACCESS_KEY = 
+export AWS_REGION = 
+export AWS_ENDPOINT = 
+export AWS_STORAGE_BUCKET_NAME = 
+export AWS_COMPRESS_LAMBDA_ARN = 
+
+export AUTH0_DOMAIN  = 
+export AUTH0_AUDIENCE  = 
+export AUTH0_ISSUER  = 
+export AUTH0_ALGORITHM  = 
+export AUTH0_JWK_URL  = 
+
+export AUTH0_TENANT  = 
+export AUTH0_CLIENT_ID  = 
+export AUTH0_SECRET_ID  = 
+
+export TRACING_ENABLED  = 
+export TRACING_SERVICE_NAME  = 
+export TRACING_EXPORTER_URL  = 
+export METRICS_SERVER_PORT  = 
+
+export SEEDER_ENABLED  = 
+export SEEDER_TOKEN  = 

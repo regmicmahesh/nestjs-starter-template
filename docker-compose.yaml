@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  redis:
+    # REQUIRED
+    image: redis
+    restart: always
+
+  redis-commander:
+    # OPTIONAL
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    ports:
+      - '8082:8081'
+  
+  mongo:
+    # REQUIRED
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  mongo-express:
+    # OPTIONAL
+    image: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - '8081:8081'
+
+  # minio: # REQUIRED ONLY FOR LOCAL
+  #   image: quay.io/minio/minio
+  #   command: server /data --console-address ":9090" --address "0.0.0.0:80"
+  #   environment:
+  #     MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
+  #     MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+  #     MINIO_REGION: ${AWS_REGION}
+  #   healthcheck:
+  #     test: curl --fail http://localhost/minio/health/live || exit 1
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 5s
+  #   ports:
+  #     - '80:80' # Run in 80 to avoid issues with AWS Signature.
+  #     - '9090:9090'
+
+  app:
+    # REQUIRED
+    build:
+      context: .
+      dockerfile: './docker/Dockerfile.dev'
+    volumes:
+      - './src:/app/src'
+      - './test:/app/test'
+    ports:
+      - '3005:${PORT}'
+      - '3006:${METRICS_SERVER_PORT}'
+    env_file:
+      - ${APP_ROOT}/Makefile.override
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  tracing:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+      - 14250:14250
+      - 14268:14268
+      - 14269:14269
+      - 9411:9411
+  
+  # app-test:
+  #   build:
+  #     context: .
+  #     dockerfile: './docker/Dockerfile.test'
+  #   volumes:
+  #     - './src:/app/src'
+  #     - './test:/app/test'
+  #   env_file:
+  #     - ${APP_ROOT}/Makefile.override
+  #   depends_on:
+  #     mongo:
+  #       condition: service_healthy
+  #   command: yarn test
+
+  # app-test-e2e:
+  #   build:
+  #     context: .
+  #     dockerfile: './docker/Dockerfile.test'
+  #   volumes:
+  #     - './src:/app/src'
+  #     - './test:/app/test'
+  #   env_file:
+  #     - ${APP_ROOT}/Makefile.override
+  #   depends_on:
+  #     mongo:
+  #       condition: service_healthy
+  #   command: yarn test:e2e
+
+networks:
+  default:
+    name: 'starter-dev-network'
